@@ -1,0 +1,16 @@
+{
+  "author": "Andrew Webster",
+  "gitHubUrl": "https://github.com/Andywebs/hubitat",
+  "packages": [
+    {
+      "id": "5e5d90ee-ee6f-4889-8b43-2b5ddc1e5d0a",
+      "name": "HubitatDrivers",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/Andywebs/hubitat/main/packageManifest.json",
+      "description": "Drivers for Hubitat, hue bulbs, etcs",
+      "tags": [
+        "Buttons"
+      ]
+    }
+  ]
+}
