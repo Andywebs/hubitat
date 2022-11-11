@@ -1,0 +1,22 @@
+ {
+	"packageName": "BoundryDrivers",
+	"minimumHEVersion": "2.1.9",
+	"author": "Andrew Webster",
+	"version": "1.0.0",
+	"betaVersion": "1.0.0a,
+	"dateReleased": "2022-11-11",
+	"documentationLink": "",
+	"communityLink": "https://community.hubitat.com/t/philips-hue-tap-dial-button-potential-music-sonos-controller/95974/4",
+	"licenseFile": "https://github.com/Andywebs/hubitat/blob/main/LICENSE",
+	"releaseNotes": "This was for firmware version: 100B-0121-02003B13  Will retest after update",
+	"drivers" : [
+		{
+			"id": "163f6821-e8a7-48fc-8e66-c1787cfe54eb",
+			"name": "Philips Hue Tap Dial v2",
+			"namespace": "boundry",
+			"location": "https://raw.githubusercontent.com/Andywebs/hubitat/main/drivers/PhilipsHueTapDialV2.groovy",
+			"betaLocation": "https://raw.githubusercontent.com/Andywebs/hubitat/main/drivers/PhilipsHueTapDialV2_beta.groovy",
+			"required": true
+		}
+	]
+}
