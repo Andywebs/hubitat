@@ -5,7 +5,7 @@
 */
 
 metadata {
-    definition(name: "Philips Hue Tap Dial v2", namespace: "hubitat", author: "Andrew Webster", component: true) {
+    definition(name: "Philips Hue Tap Dial v2", namespace: "boundry", author: "Andrew Webster", component: true) {
         capability "Refresh"
         capability "Actuator"
         capability "Configuration"
