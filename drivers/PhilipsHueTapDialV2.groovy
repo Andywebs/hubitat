@@ -2,10 +2,11 @@
 	Philips Hue Tap Dial
 	2022-11-11 A.Webster
 	    -First WIP
+        - 1.02 - fixed configure/registration
 */
 
 metadata {
-    definition(name: "Philips Hue Tap Dial v2", namespace: "boundry", author: "Andrew Webster", component: true) {
+    definition(name: "Philips Hue Tap Dial", namespace: "boundry", author: "Andrew Webster", component: true) {
         capability "Refresh"
         capability "Actuator"
         capability "Configuration"
@@ -42,7 +43,7 @@ void parse(List description) { log.warn "parse(List description) not implemented
 // raw, clusterId, sourceEndpoint, destinationEndpoint, options, messageType, dni, isClusterSpecific, 
 // isManufacturerSpecific, manufacturerId, command, direction, data
 def parse(String description) {
-    if (logEnable) log.debug "parse description: ${description}"
+    if (logEnable) log.debug "parse description: ${description}" 
 
     def descMap = zigbee.parseDescriptionAsMap(description)
     def descriptionText
@@ -75,41 +76,47 @@ def parse(String description) {
             }
         break
         case 8:
-            //if (logEnable) log.debug "Case 8: ${descMap.clusterInt}: Value:${value}  Data:${data}"
-            speed1 = Integer.parseInt(data[2],16)
-            speed2 = Integer.parseInt(data[1],16)
-            //speed3 = ((speed1 -4) * 16 + speed2) / 8
-            speed3 = speed1 * 16 + speed2
+            if (logEnable) log.debug "Case 8: ${descMap.clusterInt}: Value:${value}  Data:${data}"
+            if(data != null && data[1] != null)
+            {
+                if (data[1] == "FF")
+                {
+                    // For now, any held button sends out this command
+                    hold(5)
+                    return
+                }
+                else if(data[2] != null)
+                {                
+                    speed1 = Integer.parseInt(data[2],16)
+                    speed2 = Integer.parseInt(data[1],16)
+                    //speed3 = ((speed1 -4) * 16 + speed2) / 8
+                    speed3 = speed1 * 16 + speed2
         
-            int speed4 = ((speed3 - 72) / 6) + 1
-            if(speed4 > 1)
-            {    
-                speed = speed4 * (speed4 - 1)
-            }            
-            else
-            {
-                speed = 1
-            }
+                    int speed4 = ((speed3 - 72) / 6) + 1
+                    if(speed4 > 1)
+                    {    
+                        speed = speed4 * (speed4 - 1)
+                    }            
+                    else
+                    {
+                        speed = 1
+                    }
 
-            if (data[1] == "FF")
-            {
-                // For now, any held button sends out this command
-                hold(5)
-            }
-            else
-            {
-                // Dial
-                switch(data[0]) {
-                    case "00":
-                        // Increase
-                        dialClockwise(speed)
-                        //if (logEnable) log.debug "Increase ${speed} ( ${speed3}   ${speed1} )"
-                    break
-                    case "01":
-                        // Decrease
-                        dialCounterclockwise(speed)
-                        //if (logEnable) log.debug  "Decrease ${speed} ( ${speed3}   ${speed1} )"                        
-                    break
+                    // Dial
+                    switch(data[0]) {
+                        case "00":
+                            // Increase
+                            dialClockwise(speed)
+                            return
+                            //if (logEnable) log.debug "Increase ${speed} ( ${speed3}   ${speed1} )"
+                        break
+                        case "01":
+                            // Decrease
+                            dialCounterclockwise(speed)
+                            return
+                            //if (logEnable) log.debug  "Decrease ${speed} ( ${speed3}   ${speed1} )"                        
+                        break
+                    }
                 }
             }
         break
@@ -178,14 +185,31 @@ def setLevel(value, rate = null) {
     sendEvent(name:"level", value:level, descriptionText:"set to", isStateChange:true)
 }
 
-void configure(){
+def configure(){
     log.warn "configure..."
-    runIn(1800,logsOff)
+    //runIn(1800,logsOff)
     sendEvent(name: "numberOfButtons", value: 5)
+    sendEvent(name: "pushed", value: 1)
+    sendEvent(name: "level", value: 0)
+    sendEvent(name: "held", value: 5)
+
     state."${1}" = 0
     state."${2}" = 0
     runIn(5, "refresh")
+    def cmds = [
+            //bindings
+            "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0006 {${device.zigbeeId}} {}", "delay 200",
+            "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0008 {${device.zigbeeId}} {}", "delay 200",
+            "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0005 {${device.zigbeeId}} {}", "delay 200",
+
+            //reporting
+            "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 0 0x10 0 0xFFFF {}","delay 200",
+            "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0 0x20 0 0xFFFF {}", "delay 200",
+            "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0005 0 0x30 0 0xFFFF {}", "delay 200",        
+    ] + refresh()    
+    return cmds
 }
+
 void on() {
     parent?.componentOn(this.device)
 }
@@ -196,6 +220,11 @@ void off() {
 
 void refresh() {
     parent?.componentRefresh(this.device)
+}
+
+def logsOff(){
+    log.warn "debug logging disabled..."
+    device.updateSetting("logEnable",[value:"false",type:"bool"])
 }
 
 Integer limitIntegerRange(value,min,max) {
