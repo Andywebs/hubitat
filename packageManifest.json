@@ -1,13 +1,13 @@
 {
   "packageName": "Philips Hue Tap Dial Drivers",
   "author": "Andrew Webster",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minimumHEVersion": "2.1.9",
-  "dateReleased": "2021-11-11",
+  "dateReleased": "2021-11-14",
   "drivers": [
     {
       "id": "b0f4b279-f61c-418d-b299-01dd28f3a298",
-      "name": "Philips Hue Tap Dial v2",
+      "name": "Philips Hue Tap Dial",
       "namespace": "boundry",
       "location": "https://github.com/Andywebs/hubitat/raw/main/drivers/PhilipsHueTapDialV2.groovy",
       "required": true
